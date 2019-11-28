@@ -186,7 +186,7 @@ Spoko przykład closure:
 https://itnext.io/javascript-closure-for-privacy-8a40c274192e
 Serio fajny, poczytaj go pare razy xD
 
-## TYPESCRIPT
+## JS NOWE FUNKCJE
 
 ### Klasy
 ```
@@ -736,3 +736,37 @@ dramaticWelcome();
 
 A zatem mamy funkcję, która czeka x `milliseconds` a następnie wykonuje zwraca `count`.
 W połączeniu z awaitem czekamy aż się wykona (Czekamy a nie puszczamy równolegle!)
+
+
+### Import/Export
+
+Domyślnie jeżeli mamy dwa pliki:
+foo.ts:
+```
+var foo = 123;
+```
+oraz bar.ts:
+```
+var bar = foo;
+```
+To jest to dozwolone, bo oba są w "globalnym" namespace.
+
+Natomiast możemy skorzystać z export:
+
+foo.ts:
+```
+export var foo = 123;
+```
+i teraz bar.ts nie ma do tego dostępu.
+Natomiast możemy to zaimportować:
+```
+import {foo} from "./foo"
+var bar = foo;
+```
+
+Dodatkowo taki import sprawia, że bar.ts staje się MODUŁEM i nie zaśmieca on globalnego namespace.
+
+## Typescript
+
+Tu Michciu nie dotarł, bo uznał że początek był łatwy :D
+
