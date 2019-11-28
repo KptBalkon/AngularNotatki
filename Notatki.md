@@ -1,3 +1,6 @@
+## Źródła
+https://basarat.gitbooks.io/typescript/
+
 ## powershell
 npm install -g @angular/cli
 - instaluje nam command line interface dla angulara
@@ -310,3 +313,426 @@ function iTakeItAll(first, second, ...allOthers) {
 iTakeItAll('foo', 'bar'); // []
 iTakeItAll('foo', 'bar', 'bas', 'qux'); // ['bas','qux']
 ```
+
+### Scope funkcji:
+
+```
+var foo = 123;
+if (true) {
+    var foo = 456;
+}
+console.log(foo); // 456
+```
+Wąsy nie powodują powstania nowego scope dla zmiennej `var` - zmienne zadeklarowane varem są scopowane do całej funkcji, nie do bloku.
+```
+var foo = 123;
+function test() {
+    var foo = 456;
+}
+test();
+console.log(foo); // 123
+```
+Rozwiązaniem jest słowo kluczowe `let`
+
+```
+let foo = 123;
+if (true) {
+    let foo = 456;
+}
+console.log(foo); // 123
+```
+Ogólnie najlepiej używać `let`.
+let jest tłumaczony na var - W razie czego zmienia mu się nazwę zmiennej. (np. `foo` -> `foo_1`
+
+let pomaga też w takich sytuacjach:
+```
+var funcs = [];
+// create a bunch of functions
+for (var i = 0; i < 3; i++) {
+    funcs.push(function() {
+        console.log(i);
+    })
+}
+// call them
+for (var j = 0; j < 3; j++) {
+    funcs[j]();
+}
+```
+Wynik to "3 3 3" - var i nie jest zamknięty w funkcji `console.log(i)`, więc jego stan jest tutaj globalny (Zakładam, że to cały kod). Będziemy mieli zatem w pamięci ostatni stan i.
+
+Zamiast tworzyć jakieś porąbane closure dla wpychanej funkcji, można po prostu użyć `let`
+```
+var funcs = [];
+// create a bunch of functions
+for (let i = 0; i < 3; i++) { // Note the use of let
+    funcs.push(function() {
+        console.log(i);
+    })
+}
+// call them
+for (var j = 0; j < 3; j++) {
+    funcs[j]();
+}
+```
+
+### Const:
+- Block scoped, niezmienialny, trzeba go inicjalizować, można constować objekty.
+Zatme jeżeli nie planujemy zmieniać danej zmiennej, to używajmy const zamiast let.
+
+### Destrukturyzacja:
+
+```
+var rect = { x: 0, y: 10, width: 15, height: 20 };
+
+// Destructuring assignment
+var {x, y, width, height} = rect; // Zmienne zapełniamy danymi z obiektu rect
+console.log(x, y, width, height); // 0,10,15,20
+
+rect.x = 10;
+({x, y, width, height} = rect); // istniejące zmienne zapełniamy danymi z obiektu rect
+console.log(x, y, width, height); // 10,10,15,20
+```
+```
+// structure
+const obj = {"prop": "value"};
+
+// destructure
+const {"prop": zmienna} = obj;
+console.log(zmienna === "value"); // true
+```
+```
+var foo = { bar: { bas: 123 } };
+var {bar: {bas}} = foo; // Effectively `var bas = foo.bar.bas;`
+console.log(foo) //objekt bar z property bas o wartości 123
+```
+```
+var {w, x, ...remaining} = {w: 1, x: 2, y: 3, z: 4};
+console.log(w, x, remaining); // 1, 2, {y:3,z:4}
+
+var [x, , ...remaining] = [1, 2, 3, 4];
+console.log(x, remaining); // 1, [3,4]
+```
+
+I jeszcze taka fajna sztuczka od Filipa:
+
+```
+a = { b:4 }
+a.b //4
+zz = a
+zz.b = 10
+a.b //10 (referencja)
+
+// WTEM!
+
+zz = {...a}
+zz.b = 20
+a.b //10
+z.b //20
+
+```
+
+### Spread:
+
+Zamiast wrzucać arraya jako kolejne argumenty:
+```
+function foo(x, y, z) { }
+var args = [0, 1, 2];
+foo.apply(null, args);
+```
+Można użyć tzw. spreada:
+```
+function foo(x, y, z) { }
+var args = [0, 1, 2];
+foo(...args);
+```
+Używaliśmy tego też w destructuryazcji.
+
+```
+var list = [1, 2];
+list = [0, ...list, 4];
+console.log(list); // [0,1,2,4]
+```
+
+Kolejność jest ważna (To co jest później nadpisuje to co wcześniej):
+```
+const point2D = {x: 1, y: 2};
+const anotherPoint3D = {x: 5, z: 4, ...point2D};
+console.log(anotherPoint3D); // {x: 1, y: 2, z: 4}
+const yetAnotherPoint3D = {...point2D, x: 5, z: 4}
+console.log(yetAnotherPoint3D); // {x: 5, y: 2, z: 4}
+```
+
+### In vs Of:
+
+```
+var someArray = [9, 2, 5];
+for (var item in someArray) {
+    console.log(item); // 0,1,2
+}
+// Natomiast nowe wersje JS pozwalają na:
+var someArray = [9, 2, 5];
+for (var item of someArray) {
+    console.log(item); // 9,2,5
+}
+```
+
+### Iteratory:
+https://basarat.gitbooks.io/typescript/content/docs/iterators.html
+Jak to zrozumiem o co biega, to tu wrzucę xD
+
+### Interpolacja stringów:
+Używa się do tego backticka (Tam gdzie tylda)
+
+```
+var lyrics = 'Never gonna give you up';
+var html = `<div>${lyrics}</div>`;
+
+console.log(`2 plus 2 to ${2 + 2)`);
+
+var lyrics = `Never gonna give you up
+Never gonna let you down`;
+```
+
+### Promise
+
+![alt text](https://raw.githubusercontent.com/basarat/typescript-book/master/images/promise%20states%20and%20fates.png "Jak działa promise")
+
+Mógłbym tutaj dać przykład durnej metody, gdzie dwie różne rzeczy mogą się wywalić i trzeba brać to pod uwagę i są tysiące callbacków, bla bla bla.
+Dlatego przechodzę do mięsa:
+
+```
+const promise = new Promise((resolve, reject) => {
+    // the resolve / reject functions control the fate of the promise
+});
+```
+
+Następnie `.then` łapie resolve a `.catch` łapie errora.
+
+Przykładowo:
+```
+const promise = new Promise((resolve, reject) => {
+    resolve(123); //Udało się i zwracamy 123
+});
+promise.then((res) => {
+    console.log('I get called:', res === 123); // I get called: true
+});
+promise.catch((err) => {
+    // This is never called
+});
+const promise = new Promise((resolve, reject) => {
+    reject(new Error("Something awful happened")); // Zjebawszy i zwracamy errora.
+});
+promise.then((res) => {
+    // This is never called
+});
+promise.catch((err) => {
+    console.log('I get called:', err.message); // I get called: 'Something awful happened'
+});
+```
+
+Ogólnie koleś odpierdala niezłe fixy
+```
+Promise.reject(new Error('something bad happened'))
+    .then((res) => {
+        console.log(res); // not called
+        return 456;
+    })
+    .catch((err) => {
+        console.log(err.message); // something bad happened
+        return 123;
+    })
+    .then((res) => {
+        console.log(res); // 123
+    })
+```
+Zatem najpierw rzucamy errorem, następnie na tej podstawie logujemy resolve (Ale że nie ma resolve, to nie logujemy i to sie nie wywoła - Tak samo jak zwrotka 456), następnie łapiemy nasz error, mówimy o błędzie i zwracamy jak człowiek 123. Na koniec przejmujemy 123 i je wypisujemy.
+```
+Promise.resolve(123)
+    .then((res) => {
+        return 456;
+    })
+    .catch((err) => {
+        console.log("HERE"); // never called
+    })
+```
+
+Zatem - ERROR skacze do `.catch` a resolve do `.then`
+
+Typescript jest na tyle mądry, że ogarnia, że możemy w łańcuchu zwracać kolejno inne typy danych.
+
+Ogarnia również jak sie zachować, jeżeli dostaniemy zwrotkę promise:
+
+```
+function iReturnPromiseAfter1Second(): Promise<string> {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve("Hello world!"), 5000);
+    });
+}
+
+Promise.resolve(123)
+    .then((res) => {
+        // res is inferred to be of type `number`
+        return iReturnPromiseAfter1Second(); // We are returning `Promise<string>`
+    })
+    .then((res) => {
+        // res is inferred to be of type `string`
+        console.log(res); // Hello world!
+    });
+```
+
+Nasza poprzednio pojebana funkcja, której nie chciało mi się pisać wyglądałaby tak:
+```
+import fs = require('fs');
+function readFileAsync(filename: string): Promise<any> {
+    return new Promise((resolve,reject) => {
+        fs.readFile(filename,(err,result) => {
+            if (err) reject(err);
+            else resolve(result);
+        });
+    });
+}
+```
+
+Zatem jest to funkcja, która przyjmuje stringa a zwraca Promise od czegokolwiek.
+Zwraca nową obietnicę na podstawie odczytania pliku za pomocą fs.readFile - Jeżeli fs.readFile napotka error, to Promise zwróci reject i error a jeżeli się uda, to zwróci resolve i result.
+
+Możemy napisać takiego potworka:
+```
+// good json file
+loadJSONAsync('good.json')
+    .then(function (val) { console.log(val); })
+    .catch(function (err) {
+        console.log('good.json error', err.message); // never called
+    })
+
+// non-existent json file
+    .then(function () {
+        return loadJSONAsync('absent.json');
+    })
+    .then(function (val) { console.log(val); }) // never called
+    .catch(function (err) {
+        console.log('absent.json error', err.message);
+    })
+
+// invalid json file
+    .then(function () {
+        return loadJSONAsync('invalid.json');
+    })
+    .then(function (val) { console.log(val); }) // never called
+    .catch(function (err) {
+        console.log('bad.json error', err.message);
+    });
+```
+Mamy rozważone 3 opcje - Poprawny json, nieistniejący json, invalid json. Odpalamy je po kolei (Tą samą metodą jakbyś się tak przyjrzał) i mamy rozważone wszystkie wypadki, nie odpalamy callbacków po parę razy itp.
+
+Nie musimy koniecznie się łańcuchować, możemy też użyć `Promise.all' jeżeli zależy nam po prostu na wynikach wszystkich promisów z łańcucha.
+```
+// an async function to simulate loading an item from some server
+function loadItem(id: number): Promise<{ id: number }> {
+    return new Promise((resolve) => {
+        console.log('loading item', id);
+        setTimeout(() => { // simulate a server delay
+            resolve({ id: id });
+        }, 1000);
+    });
+}
+
+// Wersja kolejkowa
+let item1, item2;
+loadItem(1)
+    .then((res) => {
+        item1 = res;
+        return loadItem(2);
+    })
+    .then((res) => {
+        item2 = res;
+        console.log('done');
+    }); // overall time will be around 2s
+
+// Użycie promise all
+Promise.all([loadItem(1), loadItem(2)])
+    .then((res) => {
+        [item1, item2] = res;
+        console.log('done');
+    }); // overall time will be around 1s
+```
+
+Można też zrobić zjebane wyścigi rydwanów za pomocą `Promise.race`:
+```
+var task1 = new Promise(function(resolve, reject) {
+    setTimeout(resolve, 1000, 'Rydwan 1 wygrywa');
+});
+var task2 = new Promise(function(resolve, reject) {
+    setTimeout(resolve, 2000, 'Rydwan 2 wygrywa');
+});
+
+Promise.race([task1, task2]).then(function(value) {
+  console.log(value); // "Brawo dla rydwana 1"
+  // Both resolve, but task1 resolves faster
+});
+```
+
+### Funkcje generujące:
+
+```
+function* generator(){
+    console.log('Execution started');
+    yield 0;
+    console.log('Execution resumed');
+    yield 1;
+    console.log('Execution resumed');
+}
+
+var iterator = generator();
+console.log('Starting iteration'); // This will execute before anything in the generator function body executes
+console.log(iterator.next()); // { value: 0, done: false }
+console.log(iterator.next()); // { value: 1, done: false }
+console.log(iterator.next()); // { value: undefined, done: true }
+```
+Możemy stworzyć sobie funkcje, a ona się odpala częściowo za każdym odpytaniem (W sumie jak iteratory)
+
+```
+function* generator() {
+    const bar = yield 'foo'; // bar may be *any* type
+    console.log(bar); // bar!
+}
+
+const iterator = generator();
+// Start execution till we get first yield value
+const foo = iterator.next();
+console.log(foo.value); // foo
+// Resume execution injecting bar
+const nextThing = iterator.next('bar');
+```
+
+niezły hardkor, ale chyba grokłem - generator zatrzymuje się przy `yield 'foo'`. Jeżeli teraz odpalimy `next.('bar')` to `yield 'foo'` zmieni się w `'bar'`
+
+### A na chuj mi ten generator? (Async Await)
+
+```
+function delay(milliseconds: number, count: number): Promise<number> {
+    return new Promise<number>(resolve => {
+        setTimeout(() => {
+            resolve(count);
+        }, milliseconds);
+    });
+}
+
+// async function always returns a Promise
+async function dramaticWelcome(): Promise<void> {
+    console.log("Hello");
+
+    for (let i = 0; i < 5; i++) {
+        // await is converting Promise<number> into number
+        const count: number = await delay(500, i);
+        console.log(count);
+    }
+
+    console.log("World!");
+}
+
+dramaticWelcome();
+```
+
+A zatem mamy funkcję, która czeka x `milliseconds` a następnie wykonuje zwraca `count`.
+W połączeniu z awaitem czekamy aż się wykona (Czekamy a nie puszczamy równolegle!)
