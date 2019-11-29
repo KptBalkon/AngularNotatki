@@ -770,3 +770,403 @@ Dodatkowo taki import sprawia, że bar.ts staje się MODUŁEM i nie zaśmieca on
 
 Tu Michciu nie dotarł, bo uznał że początek był łatwy :D
 
+### Annotacje
+Do wszystkiego (tak jakby) możesz dopisać adnotację tłumaczącą jaki jest to typ:
+
+```
+var num: number = 123;
+function identity(num: number): number {
+    return num;
+}
+```
+Z prymitywnych typów masz:
+```
+var num: number;
+var str: string;
+var bool: boolean;
+```
+
+Masz też robienie array:
+```
+var boolArray: boolean[];
+```
+
+Są też INTERFEJSY :D
+
+```
+interface Name {
+    first: string;
+    second: string;
+}
+
+var name: Name;
+name = {
+    first: 'John',
+    second: 'Doe'
+};
+
+name = {           // Error : `second` is missing
+    first: 'John'
+};
+name = {           // Error : `second` is the wrong type
+    first: 'John',
+    second: 1337
+};
+```
+
+Możemy też tworzyć interfejs w biegu przy deklaracji zmiennej:
+```
+var name: {
+    first: string;
+    second: string;
+};
+name = {
+    first: 'John',
+    second: 'Doe'
+};
+
+name = {           // Error : `second` is missing
+    first: 'John'
+};
+name = {           // Error : `second` is the wrong type
+    first: 'John',
+    second: 1337
+};
+```
+
+```
+function reverse<T>(items: T[]): T[] {
+    var toreturn = [];
+    for (let i = items.length - 1; i >= 0; i--) {
+        toreturn.push(items[i]);
+    }
+    return toreturn;
+}
+
+var sample = [1, 2, 3];
+var reversed = reverse(sample);
+console.log(reversed); // 3,2,1
+
+// Safety!
+reversed[0] = '1';     // Error!
+reversed = ['1', '2']; // Error!
+
+reversed[0] = 1;       // Okay
+reversed = [1, 2];     // Okay
+```
+
+### Union
+
+Można zrobić typ, który trzyma jeden z x typów. Rodzielamy je |
+```
+function formatCommandline(command: string[]|string) {
+    var line = '';
+    if (typeof command === 'string') {
+        line = command.trim();
+    } else {
+        line = command.join(' ').trim();
+    }
+
+    // Do stuff with line: string
+}
+```
+
+### Intersection
+
+Można też jebnąć typ, który jest złożeniem dwóch:
+```
+function extend<T, U>(first: T, second: U): T & U {
+  return { ...first, ...second };
+}
+
+const x = extend({ a: "hello" }, { b: 42 });
+
+// x now has both `a` and `b`
+const a = x.a;
+const b = x.b;
+```
+
+Swoją drogą to to jest bardziej union ale już chooy :p
+
+### Tuple
+
+Jest i krotka:
+```
+var nameNumber: [string, number];
+// Okay
+nameNumber = ['Jenny', 8675309];
+
+// Error!
+nameNumber = ['Jenny', '867-5309'];
+```
+
+### TypeAlias
+
+I to w sumie jest też taki union
+
+```
+type StrOrNum = string|number;
+
+// Usage: just like any other notation
+var sample: StrOrNum;
+sample = 123;
+sample = '123';
+
+// Just checking
+sample = true; // Error!
+```
+
+###Dobudówki interfejsów
+
+```
+interface Point {
+    x: number; y: number;
+}
+declare var myPoint: Point;
+
+interface Point {
+    z: number;
+}
+
+// Your code
+myPoint.z; //luz
+myPoint.x; //luzzzik!
+```
+E no WOW :D
+
+### Enumy jako flagi
+
+```
+enum AnimalFlags {
+    None           = 0,
+    HasClaws       = 1 << 0,
+    CanFly         = 1 << 1,
+    EatsFish       = 1 << 2,
+    Endangered     = 1 << 3
+}
+```
+
+A tutaj do groknięcia:
+
+```
+enum AnimalFlags {
+    None           = 0,
+    HasClaws       = 1 << 0,
+    CanFly         = 1 << 1,
+}
+type Animal = {
+    flags: AnimalFlags
+}
+
+function printAnimalAbilities(animal: Animal) {
+    var animalFlags = animal.flags;
+    if (animalFlags & AnimalFlags.HasClaws) {
+        console.log('animal has claws');
+    }
+    if (animalFlags & AnimalFlags.CanFly) {
+        console.log('animal can fly');
+    }
+    if (animalFlags == AnimalFlags.None) {
+        console.log('nothing');
+    }
+}
+
+let animal: Animal = { flags: AnimalFlags.None };
+printAnimalAbilities(animal); // nothing
+animal.flags |= AnimalFlags.HasClaws;
+printAnimalAbilities(animal); // animal has claws
+animal.flags &= ~AnimalFlags.HasClaws;
+printAnimalAbilities(animal); // nothing
+animal.flags |= AnimalFlags.HasClaws | AnimalFlags.CanFly;
+printAnimalAbilities(animal); // animal has claws, animal can fly
+```
+
+W tym wypadku
+|= dodaje flage
+&= oraz ~  ją usuwa
+| łączy flagi
+
+### Adnotacje parametrów:
+
+```
+function foo(sampleParameter: { bar: number }) { }
+```
+Nie wiem co mi dajesz, ale ma mieć parametr `bar` będący liczbą.
+
+### Wpychanie typów
+
+```
+var foo = {};
+foo.bar = 123; // Error: property 'bar' does not exist on `{}`
+foo.bas = 'hello'; // Error: property 'bas' does not exist on `{}`
+```
+ALE
+```
+interface Foo {
+    bar: number;
+    bas: string;
+}
+var foo = {} as Foo;
+foo.bar = 123;
+foo.bas = 'hello';
+```
+
+### Literały
+
+Wygląda mi to na hackowanie, użyłbym enuma, ALE NO SKORO KTOŚ TAK CHCE
+
+```
+type CardinalDirection =
+    | "North"
+    | "East"
+    | "South"
+    | "West";
+
+function move(distance: number, direction: CardinalDirection) {
+    // ...
+}
+
+move(1,"North"); // Okay
+move(1,"Nurth"); // Error!
+```
+
+### Never
+```
+function foo(x: string | number): boolean {
+  if (typeof x === "string") {
+    return true;
+  } else if (typeof x === "number") {
+    return false;
+  }
+
+  // Without a never type we would error :
+  // - Not all code paths return a value (strict null checks)
+  // - Or Unreachable code detected
+  // But because TypeScript understands that `fail` function returns `never`
+  // It can allow you to call it as you might be using it for runtime safety / exhaustive checks.
+  return fail("Unexhaustive!");
+}
+
+function fail(message: string): never { throw new Error(message); }
+```
+
+Na co to komu xD
+
+Ano na przykład:
+
+```
+function area(s: Shape) {
+    if (s.kind === "square") {
+        return s.size * s.size;
+    }
+    else if (s.kind === "rectangle") {
+        return s.width * s.height;
+    }
+    else {
+        // ERROR : `Circle` is not assignable to `never`
+        const _exhaustiveCheck: never = s;
+    }
+}
+```
+
+Teraz jeżeli dorzucimy Shape "Circle" to program nam nie wypierdoli. Zamiast tego dostaniemy infoska, że Circle nie może być neverem - A więc będziemy wiedzieli, że gdzieś coś! Wersja bez tego else byłaby akceptowalna (O zgrozo)
+
+### Retrospective Versioning
+
+Mamy obiekt
+```
+type DTO = {
+  name: string
+}
+```
+
+Ale osiem lat później odwala nam i stwierdzamy, że `name` to nazwa dla lamusów.
+Możemy dodać wersjonowanie takiego obiektu.
+
+```
+type DTO = 
+| { 
+   version: undefined, // version 0
+   name: string,
+ }
+| {
+   version: 1,
+   firstName: string,
+   lastName: string, 
+}
+// Even later 
+| {
+    version: 2,
+    firstName: string,
+    middleName: string,
+    lastName: string, 
+} 
+// So on
+
+function printDTO(dto:DTO) {
+  if (dto.version == null) {
+      console.log(dto.name);
+  } else if (dto.version == 1) {
+      console.log(dto.firstName,dto.lastName);
+  } else if (dto.version == 2) {
+      console.log(dto.firstName, dto.middleName, dto.lastName);
+  } else {
+      const _exhaustiveCheck: never = dto;
+  }
+}
+```
+
+## Angular
+
+W trakcie wykonywania tutoriala powstał taki klawy kod html:
+```
+<h2>Products</h2>
+
+<div *ngFor="let product of products">
+  <h3>
+
+    <a [title]="product.name + ' details'">
+    {{product.name}}
+    </a>
+    </h3>
+
+    <p *ngIf="product.description">
+      Description: {{product.description}}
+    </p>
+
+    <button (click)="share()">
+      Share
+    </button>
+    
+</div>
+```
+
+Oczywiście leży pod nim jeszcze odpowiedni kod css i ts, ale możemy tutaj znaleźć kilka rzeczy:
+`*ngFor` - Informujemy, że chcemy powtórzyć coś x razy po pętli. A jakiej? Tej opisanej. A skąd to całe "products"? Otóż jest w pliku `.ts` pod tą stronką.
+`[title]` - Property binding, teraz nasz element `<a>` będzie miał właściwość `title` ustawioną na nazwę produktu + `'details'`
+'*ngIf' - ten element powwstanie tylko, jeżeli `product.description` będzie truthy.
+`{{ }}` - Interpolacja
+`()` - Event Binding (`share()` jest metodą w kodzie w `.ts`)
+
+
+Natomiast plik `.ts` (Innej klasy już) wygląda mniej więcej tak:
+```
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-product-alerts',
+  templateUrl: './product-alerts.component.html',
+  styleUrls: ['./product-alerts.component.css']
+})
+export class ProductAlertsComponent implements OnInit {
+  constructor() { }
+
+  ngOnInit() {
+  }
+
+}
+```
+Zwraca uwagę tzw. dekorator `@Component` - trzyma on metadane o klasie, oraz oznacza ją jako komponent angularowy.
+*selector* to nazwa komponentu. Zwyczajowo poprzedzana prefixem `app-`
+*templateUrl* to link do htmla
+*styleUrls* link do arkuszy styli
