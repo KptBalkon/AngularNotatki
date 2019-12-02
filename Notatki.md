@@ -1170,3 +1170,11 @@ Zwraca uwagę tzw. dekorator `@Component` - trzyma on metadane o klasie, oraz oz
 *selector* to nazwa komponentu. Zwyczajowo poprzedzana prefixem `app-`
 *templateUrl* to link do htmla
 *styleUrls* link do arkuszy styli
+
+### Interpolacja bajerki
+```
+<h2>{{hero.name | uppercase}} Details</h2>
+```
+
+Tak zapisana interpolacja zawiera "interpolation bidding" - uppercase. Wiadomka co robi, warto pamiętać.
+Znaczek "|" to tak zwany pipe. Więcej o nim tutaj: https://angular.io/guide/pipes
