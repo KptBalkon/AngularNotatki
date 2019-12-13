@@ -1178,3 +1178,77 @@ Zwraca uwagę tzw. dekorator `@Component` - trzyma on metadane o klasie, oraz oz
 
 Tak zapisana interpolacja zawiera "interpolation bidding" - uppercase. Wiadomka co robi, warto pamiętać.
 Znaczek "|" to tak zwany pipe. Więcej o nim tutaj: https://angular.io/guide/pipes
+
+### Elegancki two-way binding
+
+Przykład stąd: https://stackblitz.com/angular/pxxgmdalqpmb
+
+Potrzebujemy `<input [(ngModel)]="hero.name" placeholder="name"/>`
+(Oraz dodatkowo `import { FormsModule } from '@angular/forms';` ale to tak swojo drogo)
+
+Teraz jesteśmy połączeni w dwie strony - Jeżeli coś zmieni się w inpucie, to od razu znajdzie to odwzorowanie w obiekcie i na odwrót.
+
+### Observable
+
+W serwisie:
+```
+  getHeroes(): Observable<Hero[]> {
+    return of(HEROES);
+  }
+```
+Teraz ta metoda zwraca nam HEROES (jest to lista obiektów hero) asynchronicznie.
+Możemy ją obserwować w klasie właściwej:
+```
+getHeroes(): void {
+  this.heroService.getHeroes()
+      .subscribe(heroes => this.heroes = heroes);
+}
+```
+
+### entryComponents
+
+W WidgetTableModule:
+
+```
+@NgModule({
+    declarations: [
+cośtam
+    ],
+    entryComponents: [
+        TableMaximizedComponent
+    ],
+    exports: [
+        CustomizationFormColumnsComponent,
+        WidgetTableHeaderComponent, //Jeżeli zaimportuję WidgetTableModule gdzie indziej, to mam dostep do tych komponentów
+        WidgetTableComponent
+    ],
+    imports: [
+cośtam
+    ]
+})
+export class WidgetTableModule { }
+```
+
+Teraz nasz serwis (WidgetTableModule) może "wyrzucić" z siebie TableMaximizedComponent - Czyli w jquery byłby to modal - Okienko nad obecnym oknem.
+Exports natomiast sprawiają, że Jeżeli zaimportuję sobie WidgetTableModule, to będę miał dostęp do komponentów z tej listy.
+A jak z teog korzystać? Otóż w `Widget-table.component.ts`:
+
+```
+private openTableMaximized(): void {
+        const dialog = this.dialog.open(TableMaximizedComponent, {
+            height: "90%",
+            width: "90%",
+        });
+        const instance = dialog.componentInstance;
+
+        const dataClone = JSON.parse(JSON.stringify(this.data)) as TableDataModel;
+        this.initializeData(dataClone);
+
+        instance.dataModel = dataClone.typeSpecificData;
+        instance.dataSourceData = this.newGeneratedDataSourceModel;
+        instance.errorMessage = this.errorMessage;
+    }
+```
+
+dialog.componentInstance wydaje się kluczowym momentem.
+Co ciekawe można sięsubskrybować do dialogu :D
